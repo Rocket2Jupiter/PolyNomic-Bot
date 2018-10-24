@@ -5,7 +5,7 @@ var fs = require('fs');
 var scoresTable = [];
 var rulesTable = [];
 var fileNameScores = 'Scores.txt';
-var fileNameRules = 'Rules.txt'.
+var fileNameRules = 'Rules.txt';
 
 // Configure logger settings
 logger.remove(logger.transports.Console);
@@ -56,11 +56,16 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             switch(cmd) {
 
                 // :addrule: (adds a rule to the rules list)
-                case ‘addrule’
-                    fs.appendFile(fileRulesList, args.join(‘ ‘) + ‘\n’, 
+                case 'addrule'
+                    rulesTable.push(args.join(' '));
+                    fs.appendFile(fileRulesList, args.join(' ') + '\n', 
                         function(err){
                             if(err) logger.info(err);
-                            else logger.info(‘Rules list updated successfully.’);
+                            else logger.info('Rules list updated successfully.');
+                    });
+                    bot.sendMessage({
+                        to: channelID,
+                        message: 'Added rule "' + args.join(' ') + '" to the list of rules.'
                     });
                 break;
  
