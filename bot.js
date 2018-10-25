@@ -32,7 +32,7 @@ bot.on('ready', function (evt) {
         scoresTable.push(fields);
     }
     data = fs.readFileSync(fileNameRules, 'ascii');
-    rulesTable = data.toString().split('\n');
+    rulesTable.concat(data.toString().split('\n'));
 });
 bot.on('message', function (user, userID, channelID, message, evt) {
     // Our bot needs to know if it will execute a command
@@ -47,9 +47,9 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             switch(cmd) {
 
                 // :addrule: (adds a rule to the rules list)
-                case 'addrule'
+                case 'addrule':
                     rulesTable.push(args.join(' '));
-                    fs.appendFile(fileRulesList, args.join(' ') + '\n', function(err) {
+                    fs.appendFile(fileNameRules, args.join(' ') + '\n', function(err) {
                             if (err) logger.info(err);
                             else logger.info('Rules list updated successfully.');
                     });
@@ -143,12 +143,12 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 // :rules:
                 case 'rules':
                     var string = '';
-                    for (var i = 0; i < temp.length; i++) {
+                    for (var i = 0; i < rulesTable.length; i++) {
                         string += i+1 + '. ' + rulesTable[i] + '\n';
                     }
                     bot.sendMessage({
                         to: channelID,
-                        message: 'rules:\n' + string;
+                        message: 'rules:\n' + string
                     });
                 break;
 
