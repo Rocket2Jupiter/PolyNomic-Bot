@@ -5,7 +5,7 @@ var fs = require('fs');
 var scoresTable = [];
 var rulesTable = [];
 var fileNameScores = 'Scores.txt';
-var fileNameRules = 'Rules.txt'.
+var fileNameRules = 'Rules.txt';
 
 // Configure logger settings
 logger.remove(logger.transports.Console);
@@ -32,20 +32,11 @@ bot.on('ready', function (evt) {
         scoresTable.push(fields);
     }
     data = fs.readFileSync(fileNameRules, 'ascii');
-    var rulesTable = data.toString().split('\n');
+    rulesTable.concat(data.toString().split('\n'));
 });
 bot.on('message', function (user, userID, channelID, message, evt) {
     // Our bot needs to know if it will execute a command
     // It will listen for messages that will start with `!`
-
-    // I have an idea for a new way to enter command messages - Spencer
-    // taking the form of :command: ‘stuff’ 
-    /* if(message.indexOf(':') != -1)
-       while(message.indexOf(':') != -1){
-    */
-    // we can’t use that, discord already uses that for emoji’s - Ryan
-    // I’ll use *command* for now instead.
-    // you should use indexOf, that way it can be found anywhere on the line -Spencer
 
     if (message.substring(0, 1) == ':') {
         var args = message.substring(1).split(' ');
@@ -56,11 +47,15 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             switch(cmd) {
 
                 // :addrule: (adds a rule to the rules list)
-                case ‘addrule’
-                    fs.appendFile(fileRulesList, args.join(‘ ‘) + ‘\n’, 
-                        function(err){
-                            if(err) logger.info(err);
-                            else logger.info(‘Rules list updated successfully.’);
+                case 'addrule':
+                    rulesTable.push(args.join(' '));
+                    fs.appendFile(fileNameRules, args.join(' ') + '\n', function(err) {
+                            if (err) logger.info(err);
+                            else logger.info('Rules list updated successfully.');
+                    });
+                    bot.sendMessage({
+                        to: channelID,
+                        message: 'Added rule "' + args.join(' ') + '" to the list of rules.'
                     });
                 break;
  
@@ -77,14 +72,9 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     if (!inGame) {
                         var userArray = [userID, user, 0, 'citizen'];
                         scoresTable.push(userArray);
-                        logger.info(userArray.join(' ') + '/n');
                         fs.appendFile(fileNameScores, userArray.join(' ') + '\n', function(err) {
-                            if (err) {
-                                logger.info(err);
-                            }
-                            else {
-                                logger.info('Data successfully added to file.');
-                            }
+                            if (err) logger.info(err);
+                            else logger.info('Data successfully added to file.');
                         });
                         message = {
                             to: channelID,
@@ -152,10 +142,13 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 
                 // :rules:
                 case 'rules':
-                    var temp = rulesTable;
+                    var string = '';
+                    for (var i = 0; i < rulesTable.length; i++) {
+                        string += i+1 + '. ' + rulesTable[i] + '\n';
+                    }
                     bot.sendMessage({
                         to: channelID,
-                        message: 'rules:\n' + temp.join('\n');
+                        message: 'rules:\n' + string
                     });
                 break;
 
@@ -171,5 +164,3 @@ bot.on('message', function (user, userID, channelID, message, evt) {
         }
     }
 });
-
-
