@@ -46,7 +46,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             cmd = cmd.substring(0, cmd.length - 1);
             switch(cmd) {
 
-                // :addrule: (adds a rule to the rules list)
+                // :addrule: string (adds a rule string to the rules list)
                 case 'addrule':
                     rulesTable.push(args.join(' '));
                     writeRules();
@@ -54,6 +54,32 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                         to: channelID,
                         message: 'Added rule "' + args.join(' ') + '" to the list of rules.'
                     });
+                break;
+                    
+                // :deleterule: number (delets rule number number from the rules list)
+                case 'deleterule':
+                    if (args.length > 1) {
+                        bot.sendMessage({
+                            to: channelID,
+                            message: ':deleterule: requires a single number.'
+                        });
+                    }
+                    else {
+                        if (rulesTable.length < args[0]) {
+                            bot.sendMessage({
+                                to: channelID,
+                                message: 'There is no rule ' + args[0] + '.'
+                            });
+                        }
+                        else {
+                            var string = rulesTable.splice(args[0] - 1, 1);
+                            writeRules();
+                            bot.sendMessage({
+                                to: channelID,
+                                message: 'Removed rule "' + string + '" from the list of rules.'
+                            });
+                        }
+                    }
                 break;
  
                 // :join: (adds you to the game with a score of 0)
@@ -83,6 +109,33 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     }
                     bot.sendMessage(message);
                 break;
+                    
+                // :quit: (removes you from the game)
+                case 'quit':
+                    var inGame = false;
+                    var i = 0;
+                    while (i < scoresTable.length) {
+                        if (scoresTable[i][0] == userID) {
+                            inGame = true;
+                            break;
+                        }
+                        i++;
+                    }
+                    if (inGame) {
+                        scoresTable.splice(i, 1);
+                        writeScores();
+                        message = {
+                            to: channelID,
+                            message: user + ' has left the game.'
+                        }
+                    }
+                    else {
+                        message = {
+                            to: channelID,
+                            message: user + ' is not in the game.'
+                        }
+                    }
+                break;
 
                 // :addscore: player number (adds number points to player's score)
                 case 'addscore':
@@ -94,13 +147,11 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     }
                     else {
                         var validPlayer = false;
-                        var i = 0;
-                        while (i < scoresTable.length) {
+                        for (var i = 0; i < scoresTable.length; i++) {
                             if (scoresTable[i][1] == args[0]) {
                                 validPlayer = true;
                                 break;
                             }
-                            i++;
                         }
                         if (!validPlayer) {
                             bot.sendMessage({
@@ -109,12 +160,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                             });
                         }
                         else {
-                            scoresTable[i][2] = Number(scoresTable[i][2]) + Number(args[1]);
-                            writeScores();
-                            bot.sendMessage({
-                                to: channelID,
-                                message: 'Added ' + args[1] + ' points to ' + args[0] + "'s score."
-                            });
+                            addScore(args[0], args[1]);
                         }
                     }
                 break;
@@ -147,17 +193,20 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 break;
 
                 // :roll: (rolls a d6)
-                case 'roll':
-                    var num = Math.ceil(Math.random() * 6);
+                case 'd6':
                     bot.sendMessage({
                         to: channelID,
-                        message: num.toString()
+                        message: d6().toString()
                     });
                 break;
             }
         }
     }
 });
+
+function d6() {
+    return Math.ceil(Math.random() * 6);
+}
 
 function writeScores() {
     var strings = [];
@@ -174,5 +223,21 @@ function writeRules() {
     fs.writeFile(fileNameRules, rulesTable.join('\n'), function(err) {
         if (err) logger.info(err);
         else logger.info('Data successfully added to file.');
+    });
+}
+
+function addScore(player, num) {
+    var i = 0;
+    while (i < scoresTable.length) {
+        if (scoresTable[i][1] == player) {
+            break;
+        }
+        i++;
+    }
+    scoresTable[i][2] = Number(scoresTable[i][2]) + Number(num);
+    writeScores();
+    bot.sendMessage({
+        to: channelID,
+        message: 'Added ' + num + ' points to ' + player + "'s score."
     });
 }
