@@ -59,7 +59,7 @@ bot.on('ready', function (evt) {
     while (players != '') {
         var player = players[0];
         players.shift();
-        var fields = item.split(' ');
+        var fields = player.split(' ');
         itemsTable.push(fields);
     }
 });
@@ -394,9 +394,23 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                             });
                         }
                         else {
-                            //TODO add code to remove the item from all players as well
                             storeTable.splice(i, 1);
                             writeStore();
+                            for (var j = 0; j < itemsTable.length; j++) {
+                                var validItem = false;
+                                var k = 1;
+                                while (k < itemsTable[j].length) {
+                                    if (itemsTable[j][k] == args[0]) {
+                                        validItem = true;
+                                        break;
+                                    }
+                                    k++;
+                                }
+                                if (validItem) {
+                                    itemsTable[j].splice(k, 1);
+                                }
+                            }
+                            writeItems();
                             bot.sendMessage({
                                 to: channelID,
                                 message: 'Removed item ' + args[0] + ' from the game.'
@@ -432,7 +446,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                         else {
                             var validItem = false;
                             for (var j = 0; j < storeTable.length; j++) {
-                                if (storeTable[i][0] == args[1]) {
+                                if (storeTable[j][0] == args[1]) {
                                     validItem = true;
                                     break;
                                 }
@@ -482,7 +496,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                         else {
                             var validItem = false;
                             var j = 1;
-                            for (j < itemsTable[i].length;) {
+                            while (j < itemsTable[i].length) {
                                 if (itemsTable[i][j] == args[1]) {
                                     validItem = true;
                                     break;
@@ -606,8 +620,8 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 // :items: (displays each player's item inventory)
                 case 'items':
                     var strings = [];
-                    for(var i = 0; i < storeTable.length; i++) {
-                        strings[i] = storeTable[i].join(' ');
+                    for(var i = 0; i < itemsTable.length; i++) {
+                        strings[i] = itemsTable[i].join(' ');
                     }
                     var string = strings.join('\n');
                     bot.sendMessage({
