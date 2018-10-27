@@ -49,10 +49,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 // :addrule: (adds a rule to the rules list)
                 case 'addrule':
                     rulesTable.push(args.join(' '));
-                    fs.appendFile(fileNameRules, args.join(' ') + '\n', function(err) {
-                            if (err) logger.info(err);
-                            else logger.info('Rules list updated successfully.');
-                    });
+                    writeRules();
                     bot.sendMessage({
                         to: channelID,
                         message: 'Added rule "' + args.join(' ') + '" to the list of rules.'
@@ -72,10 +69,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     if (!inGame) {
                         var userArray = [userID, user, 0, 'citizen'];
                         scoresTable.push(userArray);
-                        fs.appendFile(fileNameScores, userArray.join(' ') + '\n', function(err) {
-                            if (err) logger.info(err);
-                            else logger.info('Data successfully added to file.');
-                        });
+                        writeScores();
                         message = {
                             to: channelID,
                             message: user + ' has joined the game.'
@@ -116,7 +110,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                         }
                         else {
                             scoresTable[i][2] = Number(scoresTable[i][2]) + Number(args[1]);
-                            logger.info('insert file edit here.');
+                            writeScores();
                             bot.sendMessage({
                                 to: channelID,
                                 message: 'Added ' + args[1] + ' points to ' + args[0] + "'s score."
@@ -164,3 +158,21 @@ bot.on('message', function (user, userID, channelID, message, evt) {
         }
     }
 });
+
+function writeScores() {
+    var strings = [];
+    for (var i = 0; i < scoresTable.length; i++) {
+        strings.push(scoresTable[i].join(' '));
+    }
+    fs.writeFile(fileNameScores, strings.join('\n'), function(err) {
+        if (err) logger.info(err);
+        else logger.info('Data successfully added to file.');
+    });
+}
+
+function writeRules() {
+    fs.writeFile(fileNameRules, rulesTable.join('\n'), function(err) {
+        if (err) logger.info(err);
+        else logger.info('Data successfully added to file.');
+    });
+}
