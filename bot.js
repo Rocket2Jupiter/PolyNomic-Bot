@@ -5,9 +5,11 @@ var fs = require('fs');
 var scoresTable = [];
 var rulesTable = [];
 var nrs = 0;
+var turn = -1;
 var fileNameScores = 'Scores.txt';
 var fileNameRules = 'Rules.txt';
 var fileNameNRS = 'NRS.txt';
+var fileNameTurn = 'Turn.txt';
 
 // Configure logger settings
 logger.remove(logger.transports.Console);
@@ -36,6 +38,7 @@ bot.on('ready', function (evt) {
     data = fs.readFileSync(fileNameRules, 'ascii');
     rulesTable = rulesTable.concat(data.toString().split('\n'));
     nrs = fs.readFileSync(fileNameNRS, 'ascii');
+    turn = fs.readFileSync(fileNameTurn, 'ascii');
 });
 bot.on('message', function (user, userID, channelID, message, evt) {
     // Our bot needs to know if it will execute a command
@@ -271,7 +274,9 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                         }
                         else {
                             addScore(args[0], -args[1]);
+                            writeScores();
                             nrs = Number(nrs) + Number(args[1]);
+                            writeNRS();
                             bot.sendMessage({
                                 to: channelID,
                                 message: args[1] + ' points added to the NRS from ' + args[0] + "'s score."
@@ -279,8 +284,46 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                         }
                     }
                 break;
+                    
+                // :pass: (passes the turn to the next player)
+                case 'pass':
+                    if (turn == -1) {
+                        turn++;
+                        writeTurn();
+                        bot.sendMessage({
+                            to: channelID,
+                            message: 'It is now ' + scoresTable[turn][1] + "'s turn."
+                        });
+                    }
+                    else {
+                        if (scoresTable[turn][0] != userID) {
+                            bot.sendMessage({
+                                to: channelID,
+                                message: 'It is not your turn!'
+                            });
+                        }
+                        else {
+                            turn++;
+                            if (turn == scoresTable.length) {
+                                turn = -1;
+                                writeTurn();
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: "The round is over, and it's time to vote!"
+                                });
+                            }
+                            else {
+                                writeTurn();
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: 'It is now ' + scoresTable[turn][1] + "'s turn."
+                                });
+                            }
+                        }
+                    }
+                break;
 
-                // :scores:
+                // :scores: (displays the current scores, and positions)
                 case 'scores':
                     var strings = [];
                     for(var i = 0; i < scoresTable.length; i++) {
@@ -295,7 +338,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     });
                 break;
 
-                // :rules:
+                // :rules: (displays the list of rules)
                 case 'rules':
                     var string = '';
                     for (var i = 0; i < rulesTable.length; i++) {
@@ -307,12 +350,28 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     });
                 break;
                     
-                // :nrs:
+                // :nrs: (displays the NRS's current balance)
                 case 'nrs':
                     bot.sendMessage({
                         to: channelID,
                         message: 'NRS:\n' + nrs
                     });
+                break;
+                    
+                // :turn: (displays the current turn)
+                case 'turn':
+                    if (turn == -1) {
+                        bot.sendMessage({
+                            to: channelID,
+                            message: 'It is currently election time!'
+                        });
+                    }
+                    else {
+                        bot.sendMessage({
+                            to: channelID,
+                            message: 'It is currently ' + scoresTable[turn][1] + "'s turn."
+                        });
+                    }
                 break;
 
                 // :roll: (rolls a d6)
@@ -370,6 +429,13 @@ function writeRules() {
 
 function writeNRS() {
     fs.writeFile(fileNameNRS, nrs, function(err) {
+        if (err) logger.info(err);
+        else logger.info('Data successfully added to file.');
+    });
+}
+
+function writeTurn() {
+    fs.writeFile(fileNameTurn, turn, function(err) {
         if (err) logger.info(err);
         else logger.info('Data successfully added to file.');
     });
