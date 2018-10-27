@@ -31,7 +31,7 @@ bot.on('ready', function (evt) {
 
     var data = fs.readFileSync(fileNameScores, 'ascii');
     var players = [];
-    players = players.append(data.toString().split('\n'));
+    players = players.concat(data.toString().split('\n'));
     while (players != '') {
         var player = players[0];
         players = players.shift();
@@ -44,7 +44,7 @@ bot.on('ready', function (evt) {
     turn = fs.readFileSync(fileNameTurn, 'ascii');
     data = fs.readFileSync(fileNameStore, 'ascii');
     var items = [];
-    items = items.append(data.toString().split('\n'));
+    items = items.concat(data.toString().split('\n'));
     while (items != '') {
         var item = items[0];
         items = items.shift();
