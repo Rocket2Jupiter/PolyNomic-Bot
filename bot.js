@@ -6,10 +6,12 @@ var scoresTable = [];
 var rulesTable = [];
 var nrs = 0;
 var turn = -1;
+var storeTable = [];
 var fileNameScores = 'Scores.txt';
 var fileNameRules = 'Rules.txt';
 var fileNameNRS = 'NRS.txt';
 var fileNameTurn = 'Turn.txt';
+var fileNameStore = 'Store.txt';
 
 // Configure logger settings
 logger.remove(logger.transports.Console);
@@ -39,6 +41,14 @@ bot.on('ready', function (evt) {
     rulesTable = rulesTable.concat(data.toString().split('\n'));
     nrs = fs.readFileSync(fileNameNRS, 'ascii');
     turn = fs.readFileSync(fileNameTurn, 'ascii');
+    data = fs.readFileSync(fileNameStore, 'ascii');
+    var items = data.toString().split('\n');
+    while (items != '') {
+        var item = items[0];
+        items = items.shift();
+        var fields = item.split(' ');
+        storeTable.push(fields);
+    }
 });
 bot.on('message', function (user, userID, channelID, message, evt) {
     // Our bot needs to know if it will execute a command
@@ -64,7 +74,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     
                 // :deleterule: number (delets rule number number from the rules list)
                 case 'deleterule':
-                    if (args.length > 1) {
+                    if (args.length != 1) {
                         bot.sendMessage({
                             to: channelID,
                             message: 'deleterule requires a single number.'
@@ -322,6 +332,61 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                         }
                     }
                 break;
+                    
+                // :additem: name price stock (adds a new item with name name, price price, and stock stock)
+                case 'additem':
+                    if (args.length != 3 || isNaN(args[1]) || isNaN(args[2])) {
+                        bot.sendMessage({
+                            to: channelID,
+                            message: 'additem requires a name, a price, and a stock.'
+                        });
+                    }
+                    else {
+                        var itemArray = [args[0], args[1], args[2]];
+                        storeTable.push(itemArray);
+                        writeStore();
+                        bot.sendMessage({
+                            to: channelID,
+                            message: 'Item ' + args[0] + ' added to the store.'
+                        });
+                    }
+                break;
+                    
+                // :deleteitem: name (removes all items with name name from all players, and deletes the item from the store)
+                case 'deleteitem':
+                    if (args.length != 1) {
+                        bot.sendMessage({
+                            to: channelID,
+                            message: 'deleteitem requires a name.'
+                        });
+                    }
+                    else {
+                        var validItem = false;
+                        var i = 0;
+                        while (i < storeTable.length) {
+                            if (storeTable[i][0] == args[0]) {
+                                validItem = true;
+                                break;
+                            }
+                            i++;
+                        }
+                        if (!validItem) {
+                            bot.sendMessage({
+                                to: channelID,
+                                message: args[0] + ' is not an item.'
+                            });
+                        }
+                        else {
+                            //TODO add code to remove the item from all players as well
+                            storeTable.splice(i, 1);
+                            writeStore();
+                            bot.sendMessage({
+                                to: channelID,
+                                message: 'Removed item ' + args[0] + ' from the game.'
+                            });
+                        }
+                    }
+                break;
 
                 // :scores: (displays the current scores, and positions)
                 case 'scores':
@@ -372,6 +437,19 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                             message: 'It is currently ' + scoresTable[turn][1] + "'s turn."
                         });
                     }
+                break;
+                    
+                // :store: (displays the current item list, prices, and stock)
+                case 'store':
+                    var strings = [];
+                    for(var i = 0; i < storeTable.length; i++) {
+                        strings[i] = storeTable[i].join(' ');
+                    }
+                    var string = strings.join('\n');
+                    bot.sendMessage({
+                        to: channelID,
+                        message: 'store:\n' + string
+                    });
                 break;
 
                 // :roll: (rolls a d6)
@@ -436,6 +514,17 @@ function writeNRS() {
 
 function writeTurn() {
     fs.writeFile(fileNameTurn, turn, function(err) {
+        if (err) logger.info(err);
+        else logger.info('Data successfully added to file.');
+    });
+}
+
+function writeStore() {
+    var strings = [];
+    for (var i = 0; i < storeTable.length; i++) {
+        strings.push(storeTable[i].join(' '));
+    }
+    fs.writeFile(fileNameStore, strings.join('\n'), function(err) {
         if (err) logger.info(err);
         else logger.info('Data successfully added to file.');
     });
