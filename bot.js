@@ -207,6 +207,46 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     }
                 break;
                     
+                // :position: player position (sets the player player's position to position)
+                case 'position':
+                    if (args.length != 2) {
+                        bot.sendMessage({
+                            to: channelID,
+                            message: 'position requires a player and a position.'
+                        });
+                    }
+                    else {
+                        var validPlayer = false;
+                        for (var i = 0; i < scoresTable.length; i++) {
+                            if (scoresTable[i][1] == args[0]) {
+                                validPlayer = true;
+                                break;
+                            }
+                        }
+                        if (!validPlayer) {
+                            bot.sendMessage({
+                                to: channelID,
+                                message: args[0] + ' is not a player.'
+                            });
+                        }
+                        else {
+                            var i = 0;
+                            while (i < scoresTable.length) {
+                                if (scoresTable[i][1] == args[0]) {
+                                    break;
+                                }
+                                i++;
+                            }
+                            scoresTable[i][3] = args[1];
+                            writeScores();
+                            bot.sendMessage({
+                                to: channelID,
+                                message: 'changed ' + args[0] + "'s position to " + args[1] + '.'
+                            });
+                        }
+                    }
+                break;
+                    
                 // :tax: player number (takes number points from the player player, and adds them to the nrs)
                 case 'tax':
                     if (args.length != 2 || isNaN(args[1])) {
