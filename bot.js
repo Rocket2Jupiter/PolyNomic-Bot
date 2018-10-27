@@ -4,8 +4,10 @@ var auth = require('./auth.json');
 var fs = require('fs');
 var scoresTable = [];
 var rulesTable = [];
+var nrs = 0;
 var fileNameScores = 'Scores.txt';
 var fileNameRules = 'Rules.txt';
+var fileNameNRS = 'NRS.txt';
 
 // Configure logger settings
 logger.remove(logger.transports.Console);
@@ -33,6 +35,7 @@ bot.on('ready', function (evt) {
     }
     data = fs.readFileSync(fileNameRules, 'ascii');
     rulesTable = rulesTable.concat(data.toString().split('\n'));
+    nrs = fs.readFileSync(fileNameNRS, 'ascii');
 });
 bot.on('message', function (user, userID, channelID, message, evt) {
     // Our bot needs to know if it will execute a command
