@@ -61,7 +61,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     if (args.length > 1) {
                         bot.sendMessage({
                             to: channelID,
-                            message: ':deleterule: requires a single number.'
+                            message: 'deleterule requires a single number.'
                         });
                     }
                     else {
@@ -140,10 +140,10 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 
                 // :addscore: player number (adds number points to player's score)
                 case 'addscore':
-                    if (args.length < 2) {
+                    if (args.length != 2 || isNaN(args[1])) {
                         bot.sendMessage({
                             to: channelID,
-                            message: ':addscore: requires a player and a number.'
+                            message: 'addscore requires a player and a number.'
                         });
                     }
                     else {
@@ -162,6 +162,10 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                         }
                         else {
                             addScore(args[0], args[1]);
+                            bot.sendMessage({
+                                to: channelID,
+                                message: 'Added ' + args[1] + ' points to ' + args[0] + "'s score."
+                            });
                         }
                     }
                 break;
@@ -237,8 +241,4 @@ function addScore(player, num) {
     }
     scoresTable[i][2] = Number(scoresTable[i][2]) + Number(num);
     writeScores();
-    bot.sendMessage({
-        to: channelID,
-        message: 'Added ' + num + ' points to ' + player + "'s score."
-    });
 }
