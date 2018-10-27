@@ -7,11 +7,13 @@ var rulesTable = [];
 var nrs = 0;
 var turn = -1;
 var storeTable = [];
+var itemsTable = [];
 var fileNameScores = 'Scores.txt';
 var fileNameRules = 'Rules.txt';
 var fileNameNRS = 'NRS.txt';
 var fileNameTurn = 'Turn.txt';
 var fileNameStore = 'Store.txt';
+var fileNameItems = 'Items.txt';
 
 // Configure logger settings
 logger.remove(logger.transports.Console);
@@ -50,6 +52,15 @@ bot.on('ready', function (evt) {
         items.shift();
         var fields = item.split(' ');
         storeTable.push(fields);
+    }
+    data = fs.readFileSync(fileNameItems, 'ascii');
+    players = [];
+    players = players.concat(data.toString().split('\n'));
+    while (players != '') {
+        var player = players[0];
+        players.shift();
+        var fields = item.split(' ');
+        itemsTable.push(fields);
     }
 });
 bot.on('message', function (user, userID, channelID, message, evt) {
@@ -114,6 +125,8 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                         var userArray = [userID, user, 0, 'citizen'];
                         scoresTable.push(userArray);
                         writeScores();
+                        itemsTable.push([user]);
+                        writeItems();
                         message = {
                             to: channelID,
                             message: user + ' has joined the game.'
@@ -142,6 +155,8 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     if (inGame) {
                         scoresTable.splice(i, 1);
                         writeScores();
+                        itemsTable.splice(i, 1);
+                        writeItems();
                         message = {
                             to: channelID,
                             message: user + ' has left the game.'
@@ -389,6 +404,140 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                         }
                     }
                 break;
+                    
+                // :giveitem: player item (gives player player item item)
+                case 'giveitem':
+                    if (args.length != 2) {
+                        bot.sendMessage({
+                            to: channelID,
+                            message: 'giveitem requires a player and an item.'
+                        });
+                    }
+                    else {
+                        var validPlayer = false;
+                        var i = 0;
+                        while (i < scoresTable.length) {
+                            if (scoresTable[i][1] == args[0]) {
+                                validPlayer = true;
+                                break;
+                            }
+                            i++;
+                        }
+                        if (!validPlayer) {
+                            bot.sendMessage({
+                                to: channelID,
+                                message: args[0] + ' is not a player.'
+                            });
+                        }
+                        else {
+                            var validItem = false;
+                            for (var j = 0; j < storeTable.length; j++) {
+                                if (storeTable[i][0] == args[1]) {
+                                    validItem = true;
+                                    break;
+                                }
+                            }
+                            if (!validItem) {
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: args[1] + ' is not an item.'
+                                });
+                            }
+                            else {
+                                itemsTable[i].push(args[1]);
+                                writeItems();
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: 'gave a ' + args[1] + ' to ' + args[0]
+                                });
+                            }
+                        }
+                    }
+                break;
+                    
+                // :removeitem: player item (removes item item from player player's inventory)
+                case 'removeitem':
+                    if (args.length != 2) {
+                        bot.sendMessage({
+                            to: channelID,
+                            message: 'removeitem requires a player and an item.'
+                        });
+                    }
+                    else {
+                        var validPlayer = false;
+                        var i = 0;
+                        while (i < scoresTable.length) {
+                            if (scoresTable[i][1] == args[0]) {
+                                validPlayer = true;
+                                break;
+                            }
+                            i++;
+                        }
+                        if (!validPlayer) {
+                            bot.sendMessage({
+                                to: channelID,
+                                message: args[0] + ' is not a player.'
+                            });
+                        }
+                        else {
+                            var validItem = false;
+                            var j = 1;
+                            for (j < itemsTable[i].length;) {
+                                if (itemsTable[i][j] == args[1]) {
+                                    validItem = true;
+                                    break;
+                                }
+                                j++;
+                            }
+                            if (!validItem) {
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: args[0] + ' does not own a(n) ' + args[1] + '.'
+                                });
+                            }
+                            else {
+                                itemsTable[i].splice(j, 1);
+                                writeItems();
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: 'removed item ' + args[1] + ' from ' + args[0] + "'s inventory."
+                                });
+                            }
+                        }
+                    }
+                break;
+                    
+                // :addstock: item number (adds number to item item's stock)
+                case 'addstock':
+                    if (args.length != 2 || isNaN(args[1])) {
+                        bot.sendMessage({
+                            to: channelID,
+                            message: 'addscore requires an item and a number.'
+                        });
+                    }
+                    else {
+                        var validItem = false;
+                        for (var i = 0; i < storeTable.length; i++) {
+                            if (storeTable[i][0] == args[0]) {
+                                validPlayer = true;
+                                break;
+                            }
+                        }
+                        if (!validItem) {
+                            bot.sendMessage({
+                                to: channelID,
+                                message: args[0] + ' is not a(n) item.'
+                            });
+                        }
+                        else {
+                            addStock(args[0], args[1]);
+                            bot.sendMessage({
+                                to: channelID,
+                                message: 'Added ' + args[1] + ' ' + args[0] + 's to the store.'
+                            });
+                        }
+                    }
+                break;
 
                 // :scores: (displays the current scores, and positions)
                 case 'scores':
@@ -445,12 +594,25 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 case 'store':
                     var strings = [];
                     for(var i = 0; i < storeTable.length; i++) {
-                        strings[i] = storeTable[i].join(' ');
+                        strings[i] = storeTable[i].join(' | ');
                     }
                     var string = strings.join('\n');
                     bot.sendMessage({
                         to: channelID,
                         message: 'store: name | price | stock\n' + string
+                    });
+                break;
+                    
+                // :items: (displays each player's item inventory)
+                case 'items':
+                    var strings = [];
+                    for(var i = 0; i < storeTable.length; i++) {
+                        strings[i] = storeTable[i].join(' ');
+                    }
+                    var string = strings.join('\n');
+                    bot.sendMessage({
+                        to: channelID,
+                        message: 'items:\n' + string
                     });
                 break;
 
@@ -532,6 +694,17 @@ function writeStore() {
     });
 }
 
+function writeItems() {
+    var strings = [];
+    for (var i = 0; i < itemsTable.length; i++) {
+        strings.push(itemsTable[i].join(' '));
+    }
+    fs.writeFile(fileNameItems, strings.join('\n'), function(err) {
+        if (err) logger.info(err);
+        else logger.info('Data successfully added to file.');
+    });
+}
+
 function addScore(player, num) {
     var i = 0;
     while (i < scoresTable.length) {
@@ -542,4 +715,16 @@ function addScore(player, num) {
     }
     scoresTable[i][2] = Number(scoresTable[i][2]) + Number(num);
     writeScores();
+}
+
+function addStock(item, num) {
+    var i = 0;
+    while (i < storeTable.length) {
+        if (storeTable[i][0] == item) {
+            break;
+        }
+        i++;
+    }
+    storeTable[i][2] = Number(storeTable[i][2]) + Number(num);
+    writeStore();
 }
