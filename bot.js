@@ -30,10 +30,11 @@ bot.on('ready', function (evt) {
     logger.info(bot.username + ' - (' + bot.id + ')');
 
     var data = fs.readFileSync(fileNameScores, 'ascii');
-    var players = data.toString().split('\n');
+    var players = [];
+    players = players.append(data.toString().split('\n'));
     while (players != '') {
         var player = players[0];
-        players == players.shift();
+        players = players.shift();
         var fields = player.split(' ');
         scoresTable.push(fields);
     }
@@ -42,7 +43,8 @@ bot.on('ready', function (evt) {
     nrs = fs.readFileSync(fileNameNRS, 'ascii');
     turn = fs.readFileSync(fileNameTurn, 'ascii');
     data = fs.readFileSync(fileNameStore, 'ascii');
-    var items = data.toString().split('\n');
+    var items = [];
+    items = items.append(data.toString().split('\n'));
     while (items != '') {
         var item = items[0];
         items = items.shift();
@@ -448,7 +450,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     var string = strings.join('\n');
                     bot.sendMessage({
                         to: channelID,
-                        message: 'store:\n' + string
+                        message: 'store: name | price | stock\n' + string
                     });
                 break;
 
