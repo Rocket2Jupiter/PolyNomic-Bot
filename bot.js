@@ -203,6 +203,39 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                         }
                     }
                 break;
+                    
+                // :tax: player number (takes number points from the player player, and adds them to the nrs)
+                case 'tax':
+                    if (args.length != 2 || isNaN(args[1])) {
+                        bot.sendMessage({
+                            to: channelID,
+                            message: 'tax requires a player and a number.'
+                        });
+                    }
+                    else {
+                        var validPlayer = false;
+                        for (var i = 0; i < scoresTable.length; i++) {
+                            if (scoresTable[i][1] == args[0]) {
+                                validPlayer = true;
+                                break;
+                            }
+                        }
+                        if (!validPlayer) {
+                            bot.sendMessage({
+                                to: channelID,
+                                message: args[0] + ' is not a player.'
+                            });
+                        }
+                        else {
+                            addScore(args[0], -args[1]);
+                            nrs += args[1];
+                            bot.sendMessage({
+                                to: channelID,
+                                message: args[1] + ' points added to the NRS from ' + args[0] + "'s score."
+                            });
+                        }
+                    }
+                break;
 
                 // :scores:
                 case 'scores':
@@ -228,6 +261,14 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     bot.sendMessage({
                         to: channelID,
                         message: 'rules:\n' + string
+                    });
+                break;
+                    
+                // :nrs:
+                case: 'nrs':
+                    bot.sendMessage({
+                        to: channelID,
+                        message: 'NRS:\n' + nrs
                     });
                 break;
 
@@ -260,6 +301,13 @@ function writeScores() {
 
 function writeRules() {
     fs.writeFile(fileNameRules, rulesTable.join('\n'), function(err) {
+        if (err) logger.info(err);
+        else logger.info('Data successfully added to file.');
+    });
+}
+
+function writeNRS() {
+    fs.writeFile(fileNameNRS, nrs, function(err) {
         if (err) logger.info(err);
         else logger.info('Data successfully added to file.');
     });
