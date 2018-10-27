@@ -231,7 +231,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                         }
                         else {
                             addScore(args[0], -args[1]);
-                            nrs += args[1];
+                            nrs = Number(nrs) + Number(args[1]);
                             bot.sendMessage({
                                 to: channelID,
                                 message: args[1] + ' points added to the NRS from ' + args[0] + "'s score."
@@ -268,7 +268,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 break;
                     
                 // :nrs:
-                case: 'nrs':
+                case 'nrs':
                     bot.sendMessage({
                         to: channelID,
                         message: 'NRS:\n' + nrs
@@ -282,6 +282,25 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                         message: d6().toString()
                     });
                 break;
+                    
+                case 'pillow':
+                    if (args.length == 1) {
+                        var validPlayer = false;
+                        for (var i = 0; i < scoresTable.length; i++) {
+                            if (scoresTable[i][1] == args[0]) {
+                                validPlayer = true;
+                                break;
+                            }
+                        }
+                        if (validPlayer) {
+                            bot.sendMessage({
+                                to: channelID,
+                                message: '*thwack*'
+                            });
+                        }
+                    }
+                break;
+                
             }
         }
     }
