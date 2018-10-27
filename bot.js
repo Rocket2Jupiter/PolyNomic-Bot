@@ -135,6 +135,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                             message: user + ' is not in the game.'
                         }
                     }
+                    bot.sendMessage(message);
                 break;
 
                 // :addscore: player number (adds number points to player's score)
