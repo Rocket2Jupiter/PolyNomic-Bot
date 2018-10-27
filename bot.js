@@ -34,7 +34,7 @@ bot.on('ready', function (evt) {
     players = players.concat(data.toString().split('\n'));
     while (players != '') {
         var player = players[0];
-        players = players.shift();
+        players.shift();
         var fields = player.split(' ');
         scoresTable.push(fields);
     }
@@ -47,7 +47,7 @@ bot.on('ready', function (evt) {
     items = items.concat(data.toString().split('\n'));
     while (items != '') {
         var item = items[0];
-        items = items.shift();
+        items.shift();
         var fields = item.split(' ');
         storeTable.push(fields);
     }
