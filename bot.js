@@ -171,37 +171,29 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     bot.sendMessage(message);
                 break;
                     
-                // :name: player name (changes the name that the bot recognizes a player by)
+                // :name: name (changes the name that the bot recognizes you by)
                 case 'name':
-                    if (args.length != 2) {
+                    var validPlayer = false;
+                    var i = 0;
+                    while (i < scoresTable.length) {
+                        if (scoresTable[i][0] == userID) {
+                            validPlayer = true;
+                            break;
+                        }
+                        i++;
+                    }
+                    if (!validPlayer) {
                         bot.sendMessage({
                             to: channelID,
-                            message: 'name requires a player and a name.'
+                            message: 'You are not in the game.'
                         });
                     }
                     else {
-                        var validPlayer = false;
-                        var i = 0;
-                        while (i < scoresTable.length) {
-                            if (scoresTable[i][1] == args[0]) {
-                                validPlayer = true;
-                                break;
-                            }
-                            i++;
-                        }
-                        if (!validPlayer) {
-                            bot.sendMessage({
-                                to: channelID,
-                                message: args[0] + ' is not a player.'
-                            });
-                        }
-                        else {
-                            scoresTable[i][1] = args[1];
-                            bot.sendMessage({
-                                to: channelID,
-                                message: args[0] + "'s name has been changed to " + args[1] + '.'
-                            });
-                        }
+                        scoresTable[i][1] = args.join(' ');
+                        bot.sendMessage({
+                            to: channelID,
+                            message: "Your name has been changed to " + scoresTable[i][1] + '.'
+                        });
                     }
                 break;
 
