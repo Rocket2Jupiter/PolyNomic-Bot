@@ -408,6 +408,10 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                                 }
                                 if (validItem) {
                                     itemsTable[j].splice(k, 1);
+                                    bot.sendMessage({
+                                        to: channelID,
+                                        message: 'removed item ' + args[1] + ' from ' + args[0] + "'s inventory."
+                                    });
                                 }
                             }
                             writeItems();
@@ -570,14 +574,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 
                 // :rules: (displays the list of rules)
                 case 'rules':
-                    var string = '';
-                    for (var i = 0; i < rulesTable.length; i++) {
-                        string += i+1 + '. ' + rulesTable[i] + '\n';
-                    }
-                    bot.sendMessage({
-                        to: channelID,
-                        message: 'rules:\n' + string
-                    });
+                    rules(channelID);
                 break;
                     
                 // :nrs: (displays the NRS's current balance)
@@ -663,6 +660,30 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 
 function d6() {
     return Math.ceil(Math.random() * 6);
+}
+
+async function rules(channelID) {
+    var strings = ['rules:\n'];
+    var count = 0;
+    for (var i = 0; i < rulesTable.length; i++) {
+        var rule = i+1 + '. ' + rulesTable[i] + '\n';
+        if (strings[count].length + rule.length > 2000) {
+            count++;
+            strings[count] = '';
+        }
+        strings[count] += rule;
+    }
+    for (var i = 0; i < strings.length; i++) {
+        await bot.sendMessage({
+            to: channelID,
+            message: strings[i]
+        });
+        await sleep(100);
+    }
+}
+
+function sleep(millis) {
+    return new Promise(resolve => setTimeout(resolve, millis));
 }
 
 function writeScores() {
