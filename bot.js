@@ -87,7 +87,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     if (args.length == 0) {
                         bot.sendMessage({
                             to: channelID,
-                            message: 'Nomic bot uses the following commands:/n' +
+                            message: 'Nomic bot uses the following commands:\n' +
                                      ':help: [commandname (optional)]\n' +
                                      ':join:\n' +
                                      ':quit:\n' +
