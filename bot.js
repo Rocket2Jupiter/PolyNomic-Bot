@@ -74,7 +74,205 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             args = args.splice(1);
             cmd = cmd.substring(0, cmd.length - 1);
             switch(cmd) {
-
+                    
+                // :help: (displays a list of commands)
+                // :help: commandname (displays a description of command commandname and how to use it)
+                case 'help':
+                    if (args.length > 2) {
+                        bot.sendMessage({
+                            to: channelID,
+                            message: 'help requires either no arguments, or a command name.'
+                        });
+                    }
+                    if (args.length == 0) {
+                        bot.sendMessage({
+                            to: channelID,
+                            message: 'Nomic bot uses the following commands:/n' +
+                                     ':help: [commandname (optional)]\n' +
+                                     ':join:\n' +
+                                     ':quit:\n' +
+                                     ':name: [newname]\n' +
+                                     ':d6:\n' +
+                                     ':pass:\n' +
+                                     ':addscore: [player] [amount]\n' +
+                                     ':addrule: [ruletext]\n' +
+                                     ':deleterule: [rulenumber]\n' +
+                                     ':position: [player] [position]\n' +
+                                     ':tax: [player] [amount]\n' +
+                                     ':additem: [name] [price] [stock]\n' +
+                                     ':deleteitem: [name]\n' +
+                                     ':giveitem: [player] [itemname]\n' +
+                                     ':removeitem: [player] [itemname]\n' +
+                                     ':addstock: [itemname] [amount]\n' +
+                                     ':scores:\n' +
+                                     ':turn:\n' +
+                                     ':rules:\n' +
+                                     ':nrs:\n' +
+                                     ':store:\n' +
+                                     ':items:\n' +
+                                     'Use :help: [commandname] to learn more about a specific command.'
+                        });
+                    }
+                    else {
+                        switch(args[0]) {
+                            case 'help':
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: ':help: [commandname (optional)]/n' +
+                                             'This command either shows a list of all commands, or if you give it a command name, it gives a description of what that command does, and how to use it.'
+                                });
+                            break;
+                            case 'join':
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: ':join:/n' +
+                                             'This command adds you to the game. Your name starts as your discord username, but you can further change it with :name:.'
+                                });
+                            break;
+                            case 'quit':
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: ':quit:/n' +
+                                             'This command removes you from the game, so that players do not have to wait for you to pass the turn.'
+                                });
+                            break;
+                            case 'name':
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: ':name: [newname]/n' +
+                                             'This command changes the name the bot recognizes you by to the given name.'
+                                });
+                            break;
+                            case 'd6':
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: ':d6: [newname]/n' +
+                                             'This command simulates rolling a six-sided die and gives the result. It does not automatically apply any rules, since those can change frequently.'
+                                });
+                            break;
+                            case 'pass':
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: ':pass:/n' +
+                                             "This command passes the turn to the next player if it's your turn. If it's election time, this command can be used by anyone to begin the next round."
+                                });
+                            break;
+                            case 'addscore':
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: ':addscore: [player] [amount]/n' +
+                                             "This command adds an amount of points equal to the given amount to the given player's score. This command can also be used to remove points from a player's score by using a negative number."
+                                });
+                            break;
+                            case 'addrule':
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: ':addrule: [ruletext]/n' +
+                                             'This command adds a new rule to the game, where the new rule is all of the text after the command name.'
+                                });
+                            break;
+                            case 'deleterule':
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: ':deleterule: [rulenumber]/n' +
+                                             'This command removes the rule from the game that matches the given number. Use :rules: to find out what number a certain rule is.'
+                                });
+                            break;
+                            case 'position':
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: ':position: [player] [position]/n' +
+                                             "This command changes the given player's position to the given position."
+                                });
+                            break;
+                            case 'tax':
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: ':tax: [player] [amount]/n' +
+                                             "This command removes points from the given player's score equal to the given amount, and adds that amount of points to the nrs. This command can be used to give a player points from the nrs by using a negative number. Use :nrs: to see the current amount of points in the nrs."
+                                });
+                            break;
+                            case 'additem':
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: ':additem: [name] [price] [stock]/n' +
+                                             'This command adds a new item to the store, with the given name and price, and a starting stock equal to the given stock. Use :store: to see all items, and their prices and stock.'
+                                });
+                            break;
+                            case 'deleteitem':
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: ':deleteitem: [name]/n' +
+                                             'This command deletes the item with the given name from players as well as from the store.'
+                                });
+                            break;
+                            case 'giveitem':
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: ':giveitem: [player] [itemname]/n' +
+                                             'This command gives the given player the item with the given item name. This command does not automatically remove stock from the store, as it should also used for trading items among players. Use :addstock: with a negative number to remove stock from the shop.'
+                                });
+                            break;
+                            case 'removeitem':
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: ':removeitem: [player] [itemname]/n' +
+                                             'This command removes an item with the given name from the given player. This command does not automatically add stock to the store, as it should also used for trading items among players. Use :addstock: to add stock to the shop.'
+                                });
+                            break;
+                            case 'addstock':
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: ':addstock: [itemname] [amount]/n' +
+                                             'This command adds an amount of stock to the given item in the store equal to the given amount.'
+                                });
+                            break;
+                            case 'scores':
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: ':scores:/n' +
+                                             'This command displays a list of all players in the game, and shows their scores, and their positions.'
+                                });
+                            break;
+                            case 'turn':
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: ':turn:/n' +
+                                             "This command tells who's turn it is, or if elections are happening."
+                                });
+                            break;
+                            case 'rules':
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: ':rules:/n' +
+                                             'This command displays a list of all the rules.'
+                                });
+                            break;
+                            case 'nrs':
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: ':nrs:/n' +
+                                             'This command displays the number of points in the nrs.'
+                                });
+                            break;
+                            case 'store':
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: ':store:/n' +
+                                             'This command displays all of the items in the game, as well as their store price, and the amount of stock of each item in the store.'
+                                });
+                            break;
+                            case 'items':
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: ':items:/n' +
+                                             'This command shows each player, and the names of each item they own. Use :store: to find out the store price for each item, and use :rules: to find out the rules for each item.'
+                                });
+                            break;
+                        }
+                    }
+                break;
+                    
                 // :addrule: string (adds a rule string to the rules list)
                 case 'addrule':
                     rulesTable.push(args.join(' '));
@@ -189,7 +387,10 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                         });
                     }
                     else {
-                        scoresTable[i][1] = args.join(' ');
+                        scoresTable[i][1] = args[0];
+                        writeScores();
+                        itemsTable[i][1] = args[0];
+                        writeItems();
                         bot.sendMessage({
                             to: channelID,
                             message: "Your name has been changed to " + scoresTable[i][1] + '.'
@@ -619,7 +820,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     });
                 break;
 
-                // :roll: (rolls a d6)
+                // :d6: (rolls a d6)
                 case 'd6':
                     bot.sendMessage({
                         to: channelID,
