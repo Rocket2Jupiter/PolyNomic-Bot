@@ -154,7 +154,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                                 bot.sendMessage({
                                     to: channelID,
                                     message: ':pass:/n' +
-                                             "This command passes the turn to the next player if it's your turn. If it's election time, this command can be used by anyone to begin the next round."
+                                             "This command passes the turn to the next player. If it's election time, this command can be used by anyone to begin the next round."
                                 });
                             break;
                             case 'addscore':
@@ -516,29 +516,21 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                         });
                     }
                     else {
-                        if (scoresTable[turn][0] != userID) {
+                        turn++;
+                        if (turn == scoresTable.length) {
+                            turn = -1;
+                            writeTurn();
                             bot.sendMessage({
                                 to: channelID,
-                                message: 'It is not your turn!'
+                                message: "The round is over, and it's time to vote!"
                             });
                         }
                         else {
-                            turn++;
-                            if (turn == scoresTable.length) {
-                                turn = -1;
-                                writeTurn();
-                                bot.sendMessage({
-                                    to: channelID,
-                                    message: "The round is over, and it's time to vote!"
-                                });
-                            }
-                            else {
-                                writeTurn();
-                                bot.sendMessage({
-                                    to: channelID,
-                                    message: 'It is now ' + scoresTable[turn][1] + "'s turn."
-                                });
-                            }
+                            writeTurn();
+                            bot.sendMessage({
+                                to: channelID,
+                                message: 'It is now ' + scoresTable[turn][1] + "'s turn."
+                            });
                         }
                     }
                 break;
