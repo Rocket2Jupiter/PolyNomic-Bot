@@ -397,7 +397,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     else {
                         scoresTable[i][1] = args[0];
                         writeScores();
-                        itemsTable[i][1] = args[0];
+                        itemsTable[i][0] = args[0];
                         writeItems();
                         bot.sendMessage({
                             to: channelID,
