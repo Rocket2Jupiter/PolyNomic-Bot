@@ -90,7 +90,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                             message: 'Nomic bot uses the following commands:\n' +
                                      ':help: [commandname (optional)]\n' +
                                      ':join:\n' +
-                                     ':quit:\n' +
+                                     ':kick: [playername]\n' +
                                      ':name: [newname]\n' +
                                      ':d6:\n' +
                                      ':pass:\n' +
@@ -129,11 +129,11 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                                              'This command adds you to the game. Your name starts as your discord username, but you can further change it with :name:.'
                                 });
                             break;
-                            case 'quit':
+                            case 'kick':
                                 bot.sendMessage({
                                     to: channelID,
-                                    message: ':quit:/n' +
-                                             'This command removes you from the game, so that players do not have to wait for you to pass the turn.'
+                                    message: ':kick: [playername]/n' +
+                                             'This command removes the given player from the game, so that players do not have to wait for them to pass the turn.'
                                 });
                             break;
                             case 'name':
@@ -339,34 +339,42 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     bot.sendMessage(message);
                 break;
                     
-                // :quit: (removes you from the game)
-                case 'quit':
-                    var inGame = false;
-                    var i = 0;
-                    while (i < scoresTable.length) {
-                        if (scoresTable[i][0] == userID) {
-                            inGame = true;
-                            break;
-                        }
-                        i++;
-                    }
-                    if (inGame) {
-                        scoresTable.splice(i, 1);
-                        writeScores();
-                        itemsTable.splice(i, 1);
-                        writeItems();
-                        message = {
+                // :kick: player (removes player player from the game)
+                case 'kick':
+                    if (args.length != 1){
+                        bot.sendMessage({
                             to: channelID,
-                            message: user + ' has left the game.'
-                        }
+                            message: 'kick requires a player.'
+                        });
                     }
                     else {
-                        message = {
-                            to: channelID,
-                            message: user + ' is not in the game.'
+                        var inGame = false;
+                        var i = 0;
+                        while (i < scoresTable.length) {
+                            if (scoresTable[i][1] == args[0]) {
+                                inGame = true;
+                                break;
+                            }
+                            i++;
                         }
+                        if (inGame) {
+                            scoresTable.splice(i, 1);
+                            writeScores();
+                            itemsTable.splice(i, 1);
+                            writeItems();
+                            message = {
+                                to: channelID,
+                                message: args[0] + ' has left the game.'
+                            }
+                        }
+                        else {
+                            message = {
+                                to: channelID,
+                                message: args[0] + ' is not in the game.'
+                            }
+                        }
+                        bot.sendMessage(message);
                     }
-                    bot.sendMessage(message);
                 break;
                     
                 // :name: name (changes the name that the bot recognizes you by)
@@ -948,3 +956,4 @@ function addStock(item, num) {
     storeTable[i][2] = Number(storeTable[i][2]) + Number(num);
     writeStore();
 }
+
